@@ -6,8 +6,6 @@
 
 #include <iostream>
 
-//namespace catalogue {
-//namespace test {
 void TestTransportCatalogueProcessingQueryInput();
 
 void TestTransportCatalogueAddStop();
@@ -18,8 +16,6 @@ void TestTransportCatalogueAddBus();
 
 void TestTransportCatalogueGetIndexAndPtr();
 
-void TestTransportCatalogueCompleteCatalogue();
-
 void TestTransportCatalogueProcessingQueryStat();
 
 void TestTransportCatalogueGetStopsForBus();
@@ -27,5 +23,3 @@ void TestTransportCatalogueGetStopsForBus();
 void TestTransportCatalogueGetBusesForStop();
 
 void TestTransportCatalogue();
-//}
-//}

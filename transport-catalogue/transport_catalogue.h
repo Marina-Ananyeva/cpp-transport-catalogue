@@ -18,59 +18,30 @@ void TestTransportCatalogueAddStop();
 void TestTransportCatalogueAddDistance();
 void TestTransportCatalogueAddBus();
 void TestTransportCatalogueGetIndexAndPtr();
-void TestTransportCatalogueCompleteCatalogue();
 
 namespace catalogue {
-namespace head{
+namespace head {
 class TransportCatalogue{
 friend void ::TestTransportCatalogueAddStop();
 friend void ::TestTransportCatalogueAddDistance();
 friend void ::TestTransportCatalogueAddBus();
-friend void ::TestTransportCatalogueCompleteCatalogue();
 friend void ::TestTransportCatalogueGetIndexAndPtr();
 
+private:
+    struct Stop;
+    struct Bus;
+
 public:
-    struct StopsForBusStat {
-        StopsForBusStat() = default;
-
-        explicit StopsForBusStat(std::tuple<std::string_view, int, int, uint64_t, double> stops_for_bus);
-
-        StopsForBusStat(const StopsForBusStat &other);
-
-        StopsForBusStat &operator=(const StopsForBusStat &rhs);
-
-        bool Is_Empty() const;
-
-        std::tuple<std::string_view, int, int, uint64_t, double> stops_for_bus_;
-    };
-
-    struct BusesForStopStat {
-        BusesForStopStat() = default;
-
-        explicit BusesForStopStat(std::map<std::string_view, std::set<std::string_view>> buses_for_stop);
-
-        BusesForStopStat(const BusesForStopStat &other);
-
-        BusesForStopStat &operator=(const BusesForStopStat &rhs);
-
-        bool Is_Empty() const;
-
-        std::map<std::string_view, std::set<std::string_view>> buses_for_stop_;
-    };
-
-    struct GetInfoStat {
-        std::vector<std::pair<StopsForBusStat, BusesForStopStat>> info_;
-    };
-
     void AddStop(const std::vector<std::string>& text_stops);
-
-    void AddDistance(const std::vector<std::string>& text_stops);
+    const Stop* FindStop(const std::string_view stop) const;
+    std::vector<std::string_view> GetStopInfo(const std::string_view bus) const;   
 
     void AddBus(const std::vector<std::string>& text_buses);
+    const Bus* FindBus(const std::string_view bus) const;
+    std::vector<std::string_view> GetBusInfo(const std::string_view bus) const;
 
-    void CompleteCatalogue();
-
-    GetInfoStat GetInfo (stat::QueryStat& q);
+    double ComputeGeoDistance(const std::string_view bus, const int route_size) const;
+    uint64_t ComputeMapDistance(const std::string_view bus, const int route_size) const;
 
 private:
     struct Stop {
@@ -79,15 +50,15 @@ private:
 
     public:
         Stop() = default;
-
-        explicit Stop(std::string_view stop, double latitude, double longitude);
+        explicit Stop(const std::string_view stop);
+        explicit Stop(const std::tuple<std::string_view, double, double> info_stop);
+        explicit Stop(const std::string_view stop, const double latitude, const double longitude);
 
         Stop(const Stop &other);
-
         Stop &operator=(const Stop &rhs);
+        bool operator==(const Stop &rhs);
 
         std::string_view GetStop() const;
-
         std::pair<double, double> GetGeo() const;
 
     private:
@@ -96,7 +67,7 @@ private:
     };
 
     struct PairStopPtrHash {
-        std::size_t operator()(const std::pair<TransportCatalogue::Stop*, TransportCatalogue::Stop*>& s) const {
+        std::size_t operator()(const std::pair<const TransportCatalogue::Stop*, const TransportCatalogue::Stop*>& s) const {
             uint64_t hash = (size_t)(s.first) * 37 + (size_t)(s.second) * 37 * 37;
             return static_cast<size_t>(hash);
         }
@@ -107,62 +78,32 @@ private:
     friend void ::TestTransportCatalogueGetIndexAndPtr();
     public:
         Bus() = default;
-
-        explicit Bus(std::string_view bus);
-
-        explicit Bus(std::string_view bus, bool is_ring_bus);
+        explicit Bus(const std::string_view bus);
 
         Bus(const Bus &other);
-
         Bus &operator=(const Bus &rhs);
+        bool operator==(const TransportCatalogue::Bus &rhs);
 
         std::string_view GetBus() const;
 
-        bool IsRingBus() const;
-
-        std::vector<Stop*> bus_and_stops_;//vector with pointers to stops for this bus
+        std::vector<const Stop*> bus_and_stops_;//vector with pointers to stops for this bus
     private:
         std::string_view bus_;//name of bus
-        bool is_ring_bus_ = false;//is ring route
     };
 
-    Stop ParseQueryStop(std::string_view text);
+    const Stop& GetStopIndex(const std::string_view stop) const;
+    const Stop* GetStopPtr(const std::string_view stop) const;
 
-    void MakeRoute(Bus& bus, std::string_view str);
-
-    std::vector<std::pair<std::pair<Stop*, Stop*>, int>> ParseQueryDistance(std::string_view text);
-
-    Bus ParseQueryBus(std::string_view text);
-
-    const Stop& GetStopIndex(const std::string_view stop);
-
-    Stop* GetStopPtr(const std::string_view stop);
-
-    const Bus& GetBusIndex(const std::string_view bus);
-
-    Bus* GetBusPtr(const std::string_view bus);
-
-    StopsForBusStat GetStopsForBus(const std::string& stat_bus);
-
-    BusesForStopStat GetBusesForStop(const std::string& stat_stop);
+    const Bus& GetBusIndex(const std::string_view bus) const;
+    const Bus* GetBusPtr(const std::string_view bus) const;
 
     std::deque<Stop> stops_;//all stops
     std::deque<Bus> buses_;//all busses
 
-    std::unordered_map<std::string_view, Stop*> stopname_to_stop_;//map with stop name to stop-pointer
-    std::unordered_map<std::string_view, Bus*> busname_to_bus_;//map with bus name to bus-pointer
+    std::unordered_map<std::string_view, const Stop*> stopname_to_stop_;//map with stop name to stop-pointer
+    std::unordered_map<std::string_view, const Bus*> busname_to_bus_;//map with bus name to bus-pointer
 
-    std::unordered_map<const Stop*, std::unordered_set<const Bus*>> stop_to_buses_;//map with pointers to stop-buses
-    std::unordered_map<const Bus*, std::unordered_set<const Stop*>> bus_to_stops_;//map with pointers to bus-stops
-
-    std::unordered_map<std::pair<Stop*, Stop*>, int, PairStopPtrHash> stops_distance_;//map with distance between stops
+    std::unordered_map<std::pair<const Stop*, const Stop*>, int, PairStopPtrHash> stops_distance_;//map with distance between stops
 };
-}
-namespace detail {
-std::ostream& operator<<(std::ostream& os, const head::TransportCatalogue::GetInfoStat& r);
-
-std::ostream& operator<<(std::ostream& os, const head::TransportCatalogue::StopsForBusStat& r);
-
-std::ostream& operator<<(std::ostream& os, const head::TransportCatalogue::BusesForStopStat& r);
-}
-}
+}//namespace head
+}//namespace catalogue
