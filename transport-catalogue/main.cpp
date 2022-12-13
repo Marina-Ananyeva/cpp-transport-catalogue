@@ -19,36 +19,15 @@ int main() {
     //std::streambuf *coutbuf = std::cout.rdbuf();
     //std::cout.rdbuf(out.rdbuf());
     TestTransportCatalogue();
-    catalogue::input::QueryInput q;
     catalogue::head::TransportCatalogue tc;
-        {
-            LOG_DURATION("ReadQueryInput"s);
-            ReadQueryInput(std::cin, q);
-        }
+    catalogue::input::QueryInput q;
+    catalogue::stat::QueryStat q_stat;
 
-        {
-            LOG_DURATION("AddStop"s);
-            tc.AddStop(q.text_stops_);
-        }
+    catalogue::input::FillCatalogue(tc, q, std::cin);
+    cout << catalogue::stat::ExecuteStatRequests(tc, q_stat, std::cin, std::cout);
 
-        {
-            LOG_DURATION("AddBus"s);
-            tc.AddBus(q.text_buses_);
-        }
-
-        catalogue::stat::QueryStat q_stat;
-        {
-            LOG_DURATION("ReadQueryStat"s);
-            ReadQueryStat(std::cin, q_stat);
-        }
-
-        {
-            LOG_DURATION("GetInfo"s);
-            cout << catalogue::stat::GetStatInfo(tc, q_stat);
-        }
-
-        //std::cin.rdbuf(cinbuf);
-        //std::cout.rdbuf(coutbuf);
+    //std::cin.rdbuf(cinbuf);
+    //std::cout.rdbuf(coutbuf);
 }
 /*
 Пример

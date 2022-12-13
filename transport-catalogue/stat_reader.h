@@ -15,12 +15,7 @@
 #include <utility>
 #include <vector>
 
-
-
 namespace catalogue {
-namespace head {
-class TransportCatalogue;
-}//namespase head
 namespace stat {
 enum class QueryTypeStat {
     StatBus,
@@ -52,7 +47,7 @@ struct StopsForBusStat {
 struct BusesForStopStat {
     BusesForStopStat() = default;
 
-    explicit BusesForStopStat(const std::map<std::string_view, std::set<std::string_view>> buses_for_stop);
+    explicit BusesForStopStat(const std::map<std::string_view, std::set<const head::TransportCatalogue::Bus*>> buses_for_stop);
 
     BusesForStopStat(const BusesForStopStat &other);
 
@@ -60,18 +55,20 @@ struct BusesForStopStat {
 
     bool Is_Empty() const;
 
-    std::map<std::string_view, std::set<std::string_view>> buses_for_stop_;
+    std::map<std::string_view, std::set<const head::TransportCatalogue::Bus*>> buses_for_stop_;
 };
 
 struct GetInfoStat {
     std::vector<std::pair<StopsForBusStat, BusesForStopStat>> info_;
 };
 
-GetInfoStat GetStatInfo(const head::TransportCatalogue& tc, QueryStat& q);
-
 StopsForBusStat GetStopsForBus(const head::TransportCatalogue& tc, const std::string& stat_bus);
 
 BusesForStopStat GetBusesForStop(const head::TransportCatalogue& tc, const std::string& stat_stop);
+
+GetInfoStat GetStatInfo(const head::TransportCatalogue& tc, QueryStat& q);
+
+GetInfoStat ExecuteStatRequests(head::TransportCatalogue& tc, QueryStat& q, std::istream& is, std::ostream& os);
 
 std::ostream& operator<<(std::ostream& os, const GetInfoStat& r);
 

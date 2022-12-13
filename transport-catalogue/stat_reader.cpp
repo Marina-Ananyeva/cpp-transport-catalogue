@@ -1,9 +1,6 @@
 #include "stat_reader.h"
 
 namespace catalogue {
-namespace head {
-class TransportCatalogue;
-}//namespase head
 namespace stat {
 std::istream& operator>>(std::istream& is, QueryStat& q) {
     std::string operation_code;
@@ -33,8 +30,7 @@ void ReadQueryStat(std::istream& is, QueryStat& q) {
     }
 }
 
-StopsForBusStat::StopsForBusStat(const std::tuple<std::string_view, int, int, uint64_t, double> stops_for_bus) 
-: stops_for_bus_(stops_for_bus) {
+StopsForBusStat::StopsForBusStat(const std::tuple<std::string_view, int, int, uint64_t, double> stops_for_bus) : stops_for_bus_(stops_for_bus) {
 }
 
 StopsForBusStat::StopsForBusStat(const StopsForBusStat& other) {
@@ -52,7 +48,7 @@ bool StopsForBusStat::Is_Empty() const {
     return std::get<0>(stops_for_bus_).empty();
 }
 
-BusesForStopStat::BusesForStopStat(const std::map<std::string_view, std::set<std::string_view>> buses_for_stop)
+BusesForStopStat::BusesForStopStat(const std::map<std::string_view, std::set<const head::TransportCatalogue::Bus*>> buses_for_stop)
 : buses_for_stop_(buses_for_stop) {
 }
 
@@ -71,10 +67,56 @@ BusesForStopStat& BusesForStopStat::operator=(const BusesForStopStat &rhs) {
     return *this;
 }
 
+StopsForBusStat GetStopsForBus(const head::TransportCatalogue& tc, const std::string& stat_bus) {
+    StopsForBusStat r;
+    if (!stat_bus.empty()) {
+        std::string_view str(stat_bus);
+        const head::TransportCatalogue::Bus* bus_stat_ptr = tc.FindBus(str);
+        if (!bus_stat_ptr) {
+            r.stops_for_bus_ = std::make_tuple(str, 0, 0, 0, 0.0);
+        } else {
+            int r_size = tc.GetBusInfoVec(bus_stat_ptr).size();
+            int u_size = tc.GetBusInfoSet(bus_stat_ptr).size();;
+            double l_route_geo = tc.ComputeGeoDistance(str, r_size);
+            uint64_t l_route_map = tc.ComputeMapDistance(str, r_size);;
+            double c_curvature = l_route_map / l_route_geo;
+
+            r.stops_for_bus_ = std::make_tuple(str, r_size, u_size, l_route_map, c_curvature);
+        }
+    }
+
+    return r;
+}
+
+BusesForStopStat GetBusesForStop(const head::TransportCatalogue& tc, const std::string& stat_stop) {
+    BusesForStopStat r;
+    if (!stat_stop.empty()) {
+        std::string_view str(stat_stop);
+        const head::TransportCatalogue::Stop* stop_stat_ptr = tc.FindStop(str);
+        if (!stop_stat_ptr) { //проверяем есть ли такая остановка
+            r.buses_for_stop_.insert({str, {}});//передаем пустой set
+            return r;
+        }
+        else {
+            std::unordered_set<const head::TransportCatalogue::Bus*> stop_info = tc.GetStopInfoSet(stop_stat_ptr);
+            std::set<const head::TransportCatalogue::Bus*> buses;
+            if (stop_info.empty()) {//проверяем есть ли у остановки маршруты
+                buses.insert(nullptr);//передаем buses с nullptr
+                r.buses_for_stop_.insert({str, buses});
+            } else {
+                buses.insert(stop_info.begin(), stop_info.end());
+                r.buses_for_stop_.insert({str, buses});
+            }
+        }
+    }
+
+    return r;
+}
+
 GetInfoStat GetStatInfo (const head::TransportCatalogue& tc, QueryStat& q) {
     GetInfoStat r;
     std::tuple<std::string_view, int, int, uint64_t, double> tmp1;
-    std::map<std::string_view, std::set<std::string_view>> tmp2;
+    std::map<std::string_view, std::set<const head::TransportCatalogue::Bus*>> tmp2;
     if (!q.query_stat_.empty()) {
         for (const auto& query : q.query_stat_) {
             switch (query.first) {
@@ -90,51 +132,20 @@ GetInfoStat GetStatInfo (const head::TransportCatalogue& tc, QueryStat& q) {
     return r;
 }
 
-StopsForBusStat GetStopsForBus(const head::TransportCatalogue& tc, const std::string& stat_bus) {
-    StopsForBusStat r;
-    std::string_view str(stat_bus);
-    if (!stat_bus.empty()) {
-        if (!tc.FindBus(str)) {
-            r.stops_for_bus_ = std::make_tuple(str, 0, 0, 0, 0.0);
-        } else {
-            std::vector<std::string_view> bus_info = tc.GetBusInfo(str);
-            int r_size = bus_info.size();
-            int u_size = std::set<std::string_view>(bus_info.begin(), bus_info.end()).size();
-            double l_route_geo = tc.ComputeGeoDistance(str, r_size);
-            uint64_t l_route_map = tc.ComputeMapDistance(str, r_size);;
-            double c_curvature = l_route_map / l_route_geo;
-
-            r.stops_for_bus_ = std::make_tuple(str, r_size, u_size, l_route_map, c_curvature);
-        }
+GetInfoStat ExecuteStatRequests(head::TransportCatalogue& tc, QueryStat& q, std::istream& is, std::ostream& os) {
+    GetInfoStat result;
+    {
+        using namespace std::literals;
+        LOG_DURATION("ReadQueryStat"s);
+        ReadQueryStat(is, q);
+    }
+    {
+        using namespace std::literals;
+        LOG_DURATION("GetInfo"s);
+        result = GetStatInfo(tc, q);
     }
 
-    return r;
-}
-
-BusesForStopStat GetBusesForStop(const head::TransportCatalogue& tc, const std::string& stat_stop) {
-    BusesForStopStat r;
-    std::string_view str(stat_stop);
-    if (!stat_stop.empty()) {
-        std::set<std::string_view> buses;
-        if (!tc.FindStop(str)) { // проверяем есть ли такая остановка
-            using namespace std::literals;
-            buses.insert("not found"sv);
-            r.buses_for_stop_.insert({str, buses});
-            return r;
-        }
-        else {
-            std::vector<std::string_view> stop_info = tc.GetStopInfo(str);
-            if (stop_info.empty()) {//проверяем есть ли у остановки маршруты
-                using namespace std::literals;
-                buses.insert("no buses"sv);
-                r. buses_for_stop_.insert({str, buses});
-            } else {
-                buses.insert(stop_info.begin(), stop_info.end());
-                r.buses_for_stop_.insert({str, buses});
-            }
-        }
-    }
-    return r;
+    return result;
 }
 
 std::ostream& operator<<(std::ostream& os, const GetInfoStat& r) {
@@ -170,15 +181,20 @@ std::ostream &operator<<(std::ostream &os, const BusesForStopStat &r) {
     for (const auto& [stop, buses] : r.buses_for_stop_) {
         os << "Stop "s << stop << ": "s;
 
-        if (*buses.begin() == "not found"sv || *buses.begin() == "no buses"sv) {
-            os << *buses.begin() << std::endl;
-            break;
+        if (buses.empty() || *buses.begin() == nullptr) {
+            if (buses.empty()) {
+                os << "not found"sv << std::endl;
+                break;
+            } else {
+                os << "no buses"sv << std::endl;
+                break;
+            }
         }
 
         os << "buses "s;
 
         for (const auto& bus : buses) {
-            os << bus << " ";
+            os << bus->GetBus() << " ";
         }
         os << std::endl;
     }

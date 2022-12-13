@@ -1,5 +1,8 @@
 #pragma once
 
+#include "log_duration.h"
+#include "transport_catalogue.h"
+
 #include <algorithm>
 #include <iostream>
 #include <utility>
@@ -26,12 +29,15 @@ int ReadLineWithNumber(std::istream& is);
 
 void ReadQueryInput(std::istream& is, QueryInput& q);
 
-std::tuple<std::string_view, double, double> ParseQueryStop(std::string_view text);
+head::TransportCatalogue::Stop ParseQueryStop(std::string_view text);
 
-std::vector<std::pair<std::pair<const std::string_view, const std::string_view>, int>> ParseQueryDistance(std::string_view text);
+std::vector<std::pair<std::pair<const head::TransportCatalogue::Stop*, const head::TransportCatalogue::Stop*>, int>> ParseQueryDistance(head::TransportCatalogue& tc, std::string_view text);
 
-std::string_view ParseQueryBus(std::string_view text);
+head::TransportCatalogue::Bus ParseQueryBus(std::string_view text);
 
-std::vector<std::string_view> MakeRoute(std::string_view str);
+std::pair<const head::TransportCatalogue::Bus, std::vector<const head::TransportCatalogue::Stop *>> MakeRoute(head::TransportCatalogue &tc, std::string_view str);
+
+void FillCatalogue(head::TransportCatalogue& tc, QueryInput& q, std::istream& is);
+
 }//namespace input
 }//namespace catalogue

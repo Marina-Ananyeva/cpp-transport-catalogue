@@ -24,7 +24,7 @@ std::istream& operator>>(std::istream& is, QueryInput& q) {
 }
 
 int ReadLineWithNumber(std::istream& is) {
-    int result;
+    int result = 0;
     is >> result;
     return result;
 }
@@ -36,7 +36,7 @@ void ReadQueryInput(std::istream& is, QueryInput& q) {
     }
 }
 
-std::tuple<std::string_view, double, double> ParseQueryStop(std::string_view str) {
+head::TransportCatalogue::Stop ParseQueryStop(std::string_view str) {
     std::string_view stop;
     double latitude = 0.0;
     double longitude = 0.0;
@@ -56,12 +56,11 @@ std::tuple<std::string_view, double, double> ParseQueryStop(std::string_view str
     std::string str_longitude(str.substr(0, pos + 1));
     longitude = std::stod(str_longitude);
 
-    return std::make_tuple(stop, latitude, longitude);
+    return head::TransportCatalogue::Stop(stop, latitude, longitude);
 }
 
-std::vector<std::pair<std::pair<const std::string_view, const std::string_view>, int>> ParseQueryDistance(std::string_view str) {
-    std::vector<std::pair<std::pair<const std::string_view, const std::string_view>, int>> stops_distance;
-
+std::vector<std::pair<std::pair<const head::TransportCatalogue::Stop*, const head::TransportCatalogue::Stop*>, int>> ParseQueryDistance(head::TransportCatalogue& tc, std::string_view str) {
+    std::vector<std::pair<std::pair<const head::TransportCatalogue::Stop*, const head::TransportCatalogue::Stop*>, int>> stops_distance;
     using namespace std::literals;
     str.remove_prefix(std::min(str.find_first_not_of(' '), str.size()));
     auto pos = str.find(":"sv);
@@ -84,38 +83,36 @@ std::vector<std::pair<std::pair<const std::string_view, const std::string_view>,
         pos1 = stop_info.find(" to "sv);//находим " to "
         std::string_view stop_finish = stop_info.substr(pos1 + 4, stop_info.size() - pos1 - 4);//обрезаем от " to " до конца строки = конечная остановка
         
-        stops_distance.push_back(std::make_pair(std::make_pair(stop_start, stop_finish), distance));//добавляем данные в вектор
+        stops_distance.push_back(std::make_pair(std::make_pair(tc.GetStopPtr(stop_start), tc.GetStopPtr(stop_finish)), distance));//добавляем данные в вектор
     }
-
     return stops_distance;
 }
 
-std::string_view ParseQueryBus(std::string_view str) {
+head::TransportCatalogue::Bus ParseQueryBus(std::string_view str) {
     str.remove_prefix(std::min(str.find_first_not_of(' '), str.size()));//переводим начало строки на первый символ не пробел
     using namespace std::literals;
     auto pos = str.find(":"sv);//находим конец названия маршрута (включая пробелы)
     std::string_view bus = str.substr(0, pos);//оставляем строку от начала до элемента, предшествующего :
     bus = bus.substr(0, bus.find_last_not_of(' ') + 1);//оставляем строку от начала до последнего элемента, не пробела (удаляем пробелы в конце)
 
-    return bus;
+    return head::TransportCatalogue::Bus(bus);
 }
 
-std::vector<std::string_view> MakeRoute(std::string_view str) {
+std::pair<const head::TransportCatalogue::Bus, std::vector<const head::TransportCatalogue::Stop*>> MakeRoute(head::TransportCatalogue& tc, std::string_view str) {
     std::string_view stop_route;
-    std::vector<std::string_view> bus_and_stops;
+    std::vector<const head::TransportCatalogue::Stop*> bus_and_stops;
 
     using namespace std::literals;
     bool is_ring = false;//проверяем кольцевой маршрут или нет
     auto pos_ring = str.find("-"sv);
-        if (pos_ring == std::string::npos) {
-            is_ring = true;
-        }
+    if (pos_ring == std::string::npos) {
+        is_ring = true;
+    }
 
     str.remove_prefix(std::min(str.find_first_not_of(' '), str.size()));//переводим начало строки на первый символ не пробел
     auto pos = str.find(":"sv);//находим конец названия маршрута (включая пробелы)
     std::string_view bus = str.substr(0, pos);//оставляем строку от начала до элемента, предшествующего :
     bus = bus.substr(0, bus.find_last_not_of(' ') + 1);//оставляем строку от начала до последнего элемента, не пробела (удаляем пробелы в конце)
-    bus_and_stops.push_back(bus);//добавляем первым элементом название маршрута
 
     str.remove_prefix(std::min(str.find_first_not_of(' ', pos + 1), str.size())); // переводим начало строки на первый символ не пробел после :
 
@@ -127,16 +124,72 @@ std::vector<std::string_view> MakeRoute(std::string_view str) {
         stop_route = str.substr(0, pos);                                         // обрезаем название остановки до - или > (включая пробелы)
         stop_route = stop_route.substr(0, stop_route.find_last_not_of(' ') + 1); // убираем пробелы с конца
         str.remove_prefix(str.find_first_not_of(' ', pos + 1));                  // передвигаем начало на первый символ не пробел после - или >
-        bus_and_stops.push_back(stop_route);
+        bus_and_stops.push_back(tc.GetStopPtr(stop_route));
     }
 
     if (is_ring == false) {//добавляем остановки до кольцевого маршрута
-        std::vector<std::string_view> copy_vec(bus_and_stops.size() - 2);//создаем вектор - буфер размером на 2 меньше (минус первый и последний элементы)
-        std::reverse_copy(next(bus_and_stops.begin()), prev(bus_and_stops.end()), copy_vec.begin());//копируем элементы в обратном порядке кроме первого и последнего
-        bus_and_stops.reserve(bus_and_stops.size() * 2 - 2);
+        std::vector<const head::TransportCatalogue::Stop*> copy_vec(bus_and_stops.size() - 1);//создаем вектор - буфер размером на 1 меньше (минус последний элемент)
+        std::reverse_copy(bus_and_stops.begin(), prev(bus_and_stops.end()), copy_vec.begin());//копируем элементы в обратном порядке кроме последнего
+        bus_and_stops.reserve(bus_and_stops.size() * 2 - 1);
         bus_and_stops.insert(bus_and_stops.end(), copy_vec.begin(), copy_vec.end());
     }
-    return bus_and_stops;
+
+    return std::make_pair(tc.GetBusIndex(bus), bus_and_stops);
+}
+
+void FillCatalogue(head::TransportCatalogue& tc, QueryInput& q, std::istream& is) {
+    {
+        using namespace std::literals;
+        LOG_DURATION("ReadQueryInput"s);
+            ReadQueryInput(is, q);
+    }
+
+    if (!q.text_stops_.empty()) {
+        {
+            using namespace std::literals;
+            LOG_DURATION("AddStop"s);
+            for (std::string_view str : std::move(q.text_stops_)) {
+                const head::TransportCatalogue::Stop new_stop = ParseQueryStop(str);
+                tc.AddStop(new_stop);
+            }
+            tc.AddStopDirectory();
+        }
+        {
+            using namespace std::literals;
+            LOG_DURATION("AddDistance"s);
+            for (std::string_view str : std::move(q.text_stops_)) {
+                std::vector<std::pair<std::pair<const head::TransportCatalogue::Stop*, const head::TransportCatalogue::Stop*>, int>> stops_distance = input::ParseQueryDistance(tc, str);
+                tc.AddDistance(stops_distance);
+            }
+        }
+    }
+
+    if (!q.text_buses_.empty()) {
+        {
+            using namespace std::literals;
+            LOG_DURATION("AddBus"s);
+            for (std::string_view str : std::move(q.text_buses_)) {
+                head::TransportCatalogue::Bus new_bus = ParseQueryBus(str);
+                tc.AddBus(new_bus);
+            }
+            tc.AddBusDirectory();
+            
+        }
+
+        {
+            using namespace std::literals;
+            LOG_DURATION("AddRoute"s);
+            for (std::string_view str : std::move(q.text_buses_)) {
+                std::pair<const head::TransportCatalogue::Bus, std::vector<const head::TransportCatalogue::Stop*>> bus_route = MakeRoute(tc, str);
+                tc.AddRoute(bus_route);
+            }
+        }
+        {
+            using namespace std::literals;
+            LOG_DURATION("CompleteCatalogue"s);
+            tc.CompleteCatalogue();
+        }
+    }
 }
 }//namespace input
 }//namespace catalogue

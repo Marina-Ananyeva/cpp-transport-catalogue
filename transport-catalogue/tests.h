@@ -14,6 +14,8 @@ void TestTransportCatalogueAddDistance();
 
 void TestTransportCatalogueAddBus();
 
+void TestTransportCatalogueCompleteCatalogue();
+
 void TestTransportCatalogueGetIndexAndPtr();
 
 void TestTransportCatalogueProcessingQueryStat();
