@@ -1,9 +1,12 @@
 #include "constants.h"
 #include "geo.h"
-#include "input_reader.h"
+#include "domain.h"
+#include "json.h"
+#include "json_reader.h"
 #include "log_duration.h"
-#include "stat_reader.h"
-#include "tests.h"
+#include "map_renderer.h"
+#include "request_handler.h"
+#include "svg.h"
 #include "transport_catalogue.h"
 
 #include <fstream>
@@ -11,53 +14,37 @@
 using namespace std;
 
 int main() {
-    //std::ifstream in("tsB_case1_input.txt");
-    //std::streambuf *cinbuf = std::cin.rdbuf();
-    //std::cin.rdbuf(in.rdbuf());
+    std::ifstream in("input.json");
+    std::streambuf *cinbuf = std::cin.rdbuf();
+    std::cin.rdbuf(in.rdbuf());
 
-    //std::ofstream out("tsB_output.txt");
-    //std::streambuf *coutbuf = std::cout.rdbuf();
-    //std::cout.rdbuf(out.rdbuf());
-    TestTransportCatalogue();
-    catalogue::head::TransportCatalogue tc;
-    catalogue::input::QueryInput q;
-    catalogue::stat::QueryStat q_stat;
+    catalogue::head::TransportCatalogue tc;                                 //справочник
+    catalogue::reader::Query q;                                             //запросы
+    catalogue::renderer::RenderSetting r;                                   //настройки визуализации
+    catalogue::renderer::MapObjects m;                                      //объекты визуализации
 
-    catalogue::input::FillCatalogue(tc, q, std::cin);
-    cout << catalogue::stat::ExecuteStatRequests(tc, q_stat, std::cin, std::cout);
-
-    //std::cin.rdbuf(cinbuf);
-    //std::cout.rdbuf(coutbuf);
-}
+    {
+        std::ofstream out("output_result.json");
+        std::streambuf *coutbuf = std::cout.rdbuf();
+        std::cout.rdbuf(out.rdbuf());
+        
+        catalogue::reader::FillCatalogue(tc, q, r, m, std::cin);           //считываем запросы, формируем транспортный каталог и карту
+        catalogue::reader::ExecuteStatRequests(tc, q, m, std::cout);       //отвечаем на запросы в формате json
+    
+        std::cin.rdbuf(cinbuf);
+        std::cout.rdbuf(coutbuf);
+    
+    }
 /*
-Пример
-Ввод
-13
-Stop Tolstopaltsevo: 55.611087, 37.20829, 3900m to Marushkino
-Stop Marushkino: 55.595884, 37.209755, 9900m to Rasskazovka, 100m to Marushkino
-Bus 256: Biryulyovo Zapadnoye > Biryusinka > Universam > Biryulyovo Tovarnaya > Biryulyovo Passazhirskaya > Biryulyovo Zapadnoye
-Bus 750: Tolstopaltsevo - Marushkino - Marushkino - Rasskazovka
-Stop Rasskazovka: 55.632761, 37.333324, 9500m to Marushkino
-Stop Biryulyovo Zapadnoye: 55.574371, 37.6517, 7500m to Rossoshanskaya ulitsa, 1800m to Biryusinka, 2400m to Universam
-Stop Biryusinka: 55.581065, 37.64839, 750m to Universam
-Stop Universam: 55.587655, 37.645687, 5600m to Rossoshanskaya ulitsa, 900m to Biryulyovo Tovarnaya
-Stop Biryulyovo Tovarnaya: 55.592028, 37.653656, 1300m to Biryulyovo Passazhirskaya
-Stop Biryulyovo Passazhirskaya: 55.580999, 37.659164, 1200m to Biryulyovo Zapadnoye
-Bus 828: Biryulyovo Zapadnoye > Universam > Rossoshanskaya ulitsa > Biryulyovo Zapadnoye
-Stop Rossoshanskaya ulitsa: 55.595579, 37.605757
-Stop Prazhskaya: 55.611678, 37.603831
-6
-Bus 256
-Bus 750
-Bus 751
-Stop Samara
-Stop Prazhskaya
-Stop Biryulyovo Zapadnoye
-Вывод
-Bus 256: 6 stops on route, 5 unique stops, 5950 route length, 1.36124 curvature
-Bus 750: 7 stops on route, 3 unique stops, 27400 route length, 1.30853 curvature
-Bus 751: not found
-Stop Samara: not found
-Stop Prazhskaya: no buses
-Stop Biryulyovo Zapadnoye: buses 256 828 
+    {
+        std::ofstream out("output_result.xml");
+        std::streambuf *coutbuf = std::cout.rdbuf();
+        std::cout.rdbuf(out.rdbuf());
+        
+        catalogue::renderer::PrintMap(std::cout, m);                        //выводим карту в формате xml
+
+        std::cin.rdbuf(cinbuf);
+        std::cout.rdbuf(coutbuf);
+    }
 */
+}
