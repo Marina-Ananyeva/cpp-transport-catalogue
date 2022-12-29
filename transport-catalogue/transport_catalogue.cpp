@@ -33,8 +33,7 @@ void TransportCatalogue::AddBusDirectory() {
 }
 
 void TransportCatalogue::AddRoute(std::pair<const Bus*, std::vector<const Stop*>>& bus_route) {
-    const Bus *const_bus_ptr = bus_route.first;
-    Bus *bus_ptr = const_cast<Bus *>(const_bus_ptr);
+    const Bus *bus_ptr = bus_route.first;
 
     //если стоит признак, что маршрут не кольцевой, но первая и последняя остановки совпадают, меняем значение на кольцевая
     if (bus_ptr->IsRing() == false) {
@@ -53,11 +52,10 @@ void TransportCatalogue::AddRoute(std::pair<const Bus*, std::vector<const Stop*>
     for (size_t i = 0; i < bus_route.second.size(); ++i) {
         bus_ptr->AddStopForRoute(bus_route.second[i]);
 
-        Stop *stop_ptr = const_cast<Stop *>(bus_route.second[i]);
+        const Stop *stop_ptr = bus_route.second[i];
         std::vector<const Bus *> vec = stop_ptr->GetStopAndBuses();
-        if (count(vec.begin(), vec.end(), const_bus_ptr) == 0)
-        {
-            stop_ptr->AddBusFromRoute(const_bus_ptr); 
+        if (count(vec.begin(), vec.end(), bus_ptr) == 0) {
+            stop_ptr->AddBusFromRoute(bus_ptr); 
         }
     }
 }

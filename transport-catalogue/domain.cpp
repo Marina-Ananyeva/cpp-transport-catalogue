@@ -51,7 +51,7 @@ std::vector<const Bus*> Stop::GetStopAndBuses() const {
     return stop_and_buses_;
 }
 
-void Stop::AddBusFromRoute(const Bus* bus) {
+void Stop::AddBusFromRoute(const Bus* bus) const {
     stop_and_buses_.push_back(bus);
 }
 
@@ -95,11 +95,11 @@ bool Bus::IsRing() const {
     return is_ring_;
 }
 
-void Bus::ChangeIsRing(bool new_is_ring) {
+void Bus::ChangeIsRing(bool new_is_ring) const {
     is_ring_ = new_is_ring;
 }
 
-void Bus::AddStopForRoute(const Stop* stop) {
+void Bus::AddStopForRoute(const Stop* stop) const {
     bus_and_stops_.push_back(stop);
 }
 }//namespace domain
