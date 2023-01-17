@@ -2,6 +2,7 @@
 
 #include "domain.h"
 #include "json.h"
+#include "json_builder.h"
 #include "log_duration.h"
 #include "map_renderer.h"
 #include "transport_catalogue.h"
@@ -44,9 +45,9 @@ void AddRenderSetting(renderer::RenderSetting& r, const json::Dict&& setting);
 
 void FillCatalogue(head::TransportCatalogue& tc, Query& q, renderer::RenderSetting& r, renderer::MapObjects& m, std::istream& is);
 
-json::Dict MakeJsonDocumentStopsForBus(const int query_id, const stat::StopsForBusStat &r);
+json::Dict MakeJsonDocStopsForBus(const int query_id, const stat::StopsForBusStat &r);
 
-json::Dict MakeJsonDocumentBusesForStop(const int query_id, const stat::BusesForStopStat &r);
+json::Dict MakeJsonDocBusesForStop(const int query_id, const stat::BusesForStopStat &r);
 
 void ExecuteStatRequests(head::TransportCatalogue& tc, Query& q, renderer::MapObjects& m, std::ostream& os);
 }//namespace reader

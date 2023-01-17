@@ -2,6 +2,7 @@
 #include "geo.h"
 #include "domain.h"
 #include "json.h"
+#include "json_builder.h"
 #include "json_reader.h"
 #include "log_duration.h"
 #include "map_renderer.h"
