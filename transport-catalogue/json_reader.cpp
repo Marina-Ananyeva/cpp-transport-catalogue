@@ -2,7 +2,7 @@
 
 namespace catalogue {
 namespace reader {
-void ParseQuery(std::istream& is, Query &q) {
+void JSONReader::ParseQuery(std::istream& is, Query &q) {
     json::Dict text_query{json::Load(is).GetRoot().AsDict()};
     for (const auto& [key, val] : text_query) {
         using namespace std::literals;
@@ -29,7 +29,7 @@ void ParseQuery(std::istream& is, Query &q) {
     }
 }
 
-Stop ParseQueryStop(const json::Dict& stops) {
+Stop JSONReader::ParseQueryStop(const json::Dict& stops) {
     using namespace std::literals;
     std::string_view stop = stops.at("name"s).AsString();
     double latitude = stops.at("latitude"s).AsDouble();
@@ -38,7 +38,7 @@ Stop ParseQueryStop(const json::Dict& stops) {
     return Stop(stop, latitude, longitude);
 }
 
-std::vector<std::pair<std::pair<const Stop*, const Stop*>, int>> ParseQueryDistance(const stat::RequestHandler& rh, const json::Dict& stops) {
+std::vector<std::pair<std::pair<const Stop*, const Stop*>, int>> JSONReader::ParseQueryDistance(const stat::RequestHandler& rh, const json::Dict& stops) {
     std::vector<std::pair<std::pair<const Stop*, const Stop*>, int>> stops_distance;
     using namespace std::literals;
     std::string_view stop_start = stops.at("name"s).AsString();
@@ -51,7 +51,7 @@ std::vector<std::pair<std::pair<const Stop*, const Stop*>, int>> ParseQueryDista
     return stops_distance;
 }
 
-Bus ParseQueryBus(const json::Dict& buses) {
+Bus JSONReader::ParseQueryBus(const json::Dict& buses) {
     using namespace std::literals;
     std::string_view bus = buses.at("name"s).AsString();
     bool is_ring = buses.at("is_roundtrip"s).AsBool();
@@ -59,7 +59,7 @@ Bus ParseQueryBus(const json::Dict& buses) {
     return Bus(bus, is_ring);
 }
 
-std::pair<const Bus*, std::vector<const Stop*>> ParseQueryBusRoute(const stat::RequestHandler& rh, const json::Dict& buses) {
+std::pair<const Bus*, std::vector<const Stop*>> JSONReader::ParseQueryBusRoute(const stat::RequestHandler& rh, const json::Dict& buses) {
     std::string_view stop_route;
     std::vector<const Stop*> bus_and_stops;
 
@@ -74,7 +74,7 @@ std::pair<const Bus*, std::vector<const Stop*>> ParseQueryBusRoute(const stat::R
     return std::make_pair(rh.GetBusPtr(bus), bus_and_stops);
 }
 
-svg::Color ReadColor(const json::Node& color_setting) {
+svg::Color JSONReader::ReadColor(const json::Node& color_setting) {
     bool type = color_setting.IsString();
 
     if (type) {
@@ -94,7 +94,7 @@ svg::Color ReadColor(const json::Node& color_setting) {
     return svg::Color{svg::Rgba(red, green, blue, opacity)};
 }
 
-void AddRenderSetting(renderer::RenderSetting&r, const json::Dict&& setting) {
+void JSONReader::AddRenderSetting(renderer::RenderSetting&r, const json::Dict&& setting) {
     using namespace std::literals;
     r.width_ = setting.at("width"s).AsDouble();
     r.height_ = setting.at("height"s).AsDouble();
@@ -117,70 +117,7 @@ void AddRenderSetting(renderer::RenderSetting&r, const json::Dict&& setting) {
     }
 }
 
-void FillCatalogue(head::TransportCatalogue& tc, Query& q, renderer::RenderSetting& r, renderer::MapObjects& m, std::istream& is) {
-    stat::RequestHandler rh(tc);
-    {
-        using namespace std::literals;
-        LOG_DURATION("ParseQuery"s);
-            ParseQuery(is, q);
-    }
-
-    if (!q.text_base_stops_.empty()) {
-        {
-            using namespace std::literals;
-            LOG_DURATION("AddStop"s);
-            for (const auto& stop : std::move(q.text_base_stops_)) {
-                const Stop new_stop = ParseQueryStop(stop.AsDict());
-                tc.AddStop(new_stop);
-            }
-            tc.AddStopDirectory();
-        }
-        {
-            using namespace std::literals;
-            LOG_DURATION("AddDistance"s);
-            for (const auto& stop : std::move(q.text_base_stops_)) {
-                std::vector<std::pair<std::pair<const Stop*, const Stop*>, int>> stops_distance = ParseQueryDistance(rh, stop.AsDict());
-                tc.AddDistance(stops_distance);
-            }
-        }
-    }
-
-    if (!q.text_base_buses_.empty()) {
-        {
-            using namespace std::literals;
-            LOG_DURATION("AddBus"s);
-            for (const auto& bus : std::move(q.text_base_buses_)) {
-                Bus new_bus = ParseQueryBus(bus.AsDict());
-                tc.AddBus(new_bus);
-            }
-            tc.AddBusDirectory();
-            
-        }
-        {
-            using namespace std::literals;
-            LOG_DURATION("AddRoute"s);
-            for (const auto& bus : std::move(q.text_base_buses_)) {
-                std::pair<const Bus*, std::vector<const Stop*>> bus_route = ParseQueryBusRoute(rh, bus.AsDict());
-                tc.AddRoute(bus_route);
-            }
-        }
-    }
-
-        if (!q.text_render_setting_.empty()) {
-        {
-            using namespace std::literals;
-            LOG_DURATION("AddRenderSetting"s);
-            AddRenderSetting(r, std::move(q.text_render_setting_));
-        }
-        {
-            using namespace std::literals;
-            LOG_DURATION("RenderMap"s);
-            renderer::MapRenderer(rh, r, m);
-        }
-    }
-}
-
-json::Dict MakeJsonDocStopsForBus(const int query_id, const stat::StopsForBusStat& r) {
+json::Dict JSONReader::MakeJsonDocStopsForBus(const int query_id, const stat::StopsForBusStat& r) {
     json::Builder result{};
     using namespace std::literals;
     if (std::get<0>(r.stops_for_bus_) == 0) {
@@ -202,7 +139,7 @@ json::Dict MakeJsonDocStopsForBus(const int query_id, const stat::StopsForBusSta
     return result.GetNode().AsDict();
 }
 
-json::Dict MakeJsonDocBusesForStop(const int query_id, const stat::BusesForStopStat& r) {
+json::Dict JSONReader::MakeJsonDocBusesForStop(const int query_id, const stat::BusesForStopStat& r) {
     json::Builder result{};
     using namespace std::literals;
     if (r.buses_for_stop_.empty()) {
@@ -230,10 +167,76 @@ json::Dict MakeJsonDocBusesForStop(const int query_id, const stat::BusesForStopS
     return result.GetNode().AsDict();
 }
 
+void FillCatalogue(head::TransportCatalogue& tc, Query& q, renderer::RenderSetting& r, renderer::MapObjects& m, std::istream& is) {
+    stat::RequestHandler rh(tc);
+    JSONReader reader;
+    {
+        using namespace std::literals;
+        LOG_DURATION("ParseQuery"s);
+            reader.ParseQuery(is, q);
+    }
+
+    if (!q.text_base_stops_.empty()) {
+        {
+            using namespace std::literals;
+            LOG_DURATION("AddStop"s);
+            for (const auto& stop : std::move(q.text_base_stops_)) {
+                const Stop new_stop = reader.ParseQueryStop(stop.AsDict());
+                tc.AddStop(new_stop);
+            }
+            tc.AddStopDirectory();
+        }
+        {
+            using namespace std::literals;
+            LOG_DURATION("AddDistance"s);
+            for (const auto& stop : std::move(q.text_base_stops_)) {
+                std::vector<std::pair<std::pair<const Stop*, const Stop*>, int>> stops_distance = reader.ParseQueryDistance(rh, stop.AsDict());
+                tc.AddDistance(stops_distance);
+            }
+        }
+    }
+
+    if (!q.text_base_buses_.empty()) {
+        {
+            using namespace std::literals;
+            LOG_DURATION("AddBus"s);
+            for (const auto& bus : std::move(q.text_base_buses_)) {
+                Bus new_bus = reader.ParseQueryBus(bus.AsDict());
+                tc.AddBus(new_bus);
+            }
+            tc.AddBusDirectory();
+            
+        }
+        {
+            using namespace std::literals;
+            LOG_DURATION("AddRoute"s);
+            for (const auto& bus : std::move(q.text_base_buses_)) {
+                std::pair<const Bus*, std::vector<const Stop*>> bus_route = reader.ParseQueryBusRoute(rh, bus.AsDict());
+                tc.AddRoute(bus_route);
+            }
+        }
+    }
+
+        if (!q.text_render_setting_.empty()) {
+        {
+            using namespace std::literals;
+            LOG_DURATION("AddRenderSetting"s);
+            reader.AddRenderSetting(r, std::move(q.text_render_setting_));
+        }
+        {
+            using namespace std::literals;
+            LOG_DURATION("RenderMap"s);
+            renderer::MapRenderer(rh, r, m);
+        }
+    }
+}
+
 void ExecuteStatRequests(head::TransportCatalogue& tc, reader::Query& q, renderer::MapObjects& m, std::ostream& os) {
     using namespace std::literals;
     LOG_DURATION("GetInfo"s);
+
     stat::RequestHandler rh(tc);
+    JSONReader maker;
     int query_id = 0;
     std::string_view name;
 
@@ -245,12 +248,12 @@ void ExecuteStatRequests(head::TransportCatalogue& tc, reader::Query& q, rendere
 
             if (query.AsDict().at("type"s) == "Stop"s) {
                 name = query.AsDict().at("name"s).AsString();
-                result.Value(MakeJsonDocBusesForStop(query_id, stat::GetBusesForStop(rh, name)));
+                result.Value(maker.MakeJsonDocBusesForStop(query_id, stat::GetBusesForStop(rh, name)));
                 continue;
             }
             if (query.AsDict().at("type"s) == "Bus"s) {
                 name = query.AsDict().at("name"s).AsString();
-                result.Value(MakeJsonDocStopsForBus(query_id, stat::GetStopsForBus(rh, name)));
+                result.Value(maker.MakeJsonDocStopsForBus(query_id, stat::GetStopsForBus(rh, name)));
                 continue;
             }
             if (query.AsDict().at("type"s) == "Map"s) {

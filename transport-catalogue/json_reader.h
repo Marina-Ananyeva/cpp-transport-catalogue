@@ -27,27 +27,28 @@ struct Query {
     json::Dict text_render_setting_;                            //вектор с настройками визуализации карты
 };
 
-std::istream& operator>>(std::istream &is, Query &q);
+class JSONReader {
+public:
+    void ParseQuery(std::istream& is, Query& q);
 
-void ParseQuery(std::istream& is, Query& q);
+    Stop ParseQueryStop(const json::Dict& stops);
 
-Stop ParseQueryStop(const json::Dict& stops);
+    std::vector<std::pair<std::pair<const Stop*, const Stop*>, int>> ParseQueryDistance(const stat::RequestHandler& rh, const json::Dict& stops);
 
-std::vector<std::pair<std::pair<const Stop*, const Stop*>, int>> ParseQueryDistance(const stat::RequestHandler& rh, const json::Dict& stops);
+    Bus ParseQueryBus(const json::Dict& buses);
 
-Bus ParseQueryBus(const json::Dict& buses);
+    std::pair<const Bus*, std::vector<const Stop*>> ParseQueryBusRoute(const stat::RequestHandler& rh, const json::Dict& buses);
 
-std::pair<const Bus*, std::vector<const Stop*>> ParseQueryBusRoute(const stat::RequestHandler& rh, const json::Dict& buses);
+    svg::Color ReadColor(const json::Node& color_setting);
 
-svg::Color ReadColor(const json::Node& color_setting);
+    void AddRenderSetting(renderer::RenderSetting& r, const json::Dict&& setting);
 
-void AddRenderSetting(renderer::RenderSetting& r, const json::Dict&& setting);
+    json::Dict MakeJsonDocStopsForBus(const int query_id, const stat::StopsForBusStat &r);
+
+    json::Dict MakeJsonDocBusesForStop(const int query_id, const stat::BusesForStopStat &r);
+};
 
 void FillCatalogue(head::TransportCatalogue& tc, Query& q, renderer::RenderSetting& r, renderer::MapObjects& m, std::istream& is);
-
-json::Dict MakeJsonDocStopsForBus(const int query_id, const stat::StopsForBusStat &r);
-
-json::Dict MakeJsonDocBusesForStop(const int query_id, const stat::BusesForStopStat &r);
 
 void ExecuteStatRequests(head::TransportCatalogue& tc, Query& q, renderer::MapObjects& m, std::ostream& os);
 }//namespace reader
