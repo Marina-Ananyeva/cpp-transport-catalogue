@@ -65,6 +65,7 @@ Bus::Bus(const Bus& other) {
     this->bus_ = other.bus_;
     this->bus_and_stops_ = other.bus_and_stops_;
     this->is_ring_ = other.is_ring_;
+    this->final_stop_ = other.final_stop_;
 }
 
 Bus& Bus::operator=(const Bus& rhs) {
@@ -72,12 +73,14 @@ Bus& Bus::operator=(const Bus& rhs) {
         this->bus_ = rhs.bus_;
         this->bus_and_stops_ = rhs.bus_and_stops_;
         this->is_ring_ = rhs.is_ring_;
+        this->final_stop_ = rhs.final_stop_;
     }
     return *this;
 }
 
 bool Bus::operator==(const Bus &rhs) {
-    if (this->bus_ == rhs.bus_ && this->bus_and_stops_ == rhs.bus_and_stops_ && this->is_ring_ == rhs.is_ring_) {
+    if (this->bus_ == rhs.bus_ && this->bus_and_stops_ == rhs.bus_and_stops_ 
+        && this->is_ring_ == rhs.is_ring_ && this->final_stop_ == rhs.final_stop_) {
         return true;
     }
     return false;
@@ -85,6 +88,10 @@ bool Bus::operator==(const Bus &rhs) {
 
 std::string_view Bus::GetBus() const {
     return bus_;
+}
+
+std::string_view Bus::GetFinalStop() const {
+    return final_stop_;
 }
 
 std::vector<const Stop*> Bus::GetBusAndStops() const {
@@ -95,12 +102,12 @@ bool Bus::IsRing() const {
     return is_ring_;
 }
 
-void Bus::ChangeIsRing(bool new_is_ring) const {
-    is_ring_ = new_is_ring;
-}
-
 void Bus::AddStopForRoute(const Stop* stop) const {
     bus_and_stops_.push_back(stop);
+}
+
+void Bus::AddFinalStop(const Stop* stop) const {
+    final_stop_ = stop->GetStop();
 }
 }//namespace domain
 }//namespace catalogue

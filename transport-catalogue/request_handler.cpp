@@ -25,6 +25,22 @@ std::set<std::string_view> RequestHandler::GetBuses() const {
     return result;
 }
 
+std::unordered_set<const Stop*> RequestHandler::GetStopsPtr() const {
+    std::unordered_set<const Stop*> result;
+    for (const auto& [key, val] : db_.stopname_to_stop_) {
+        result.insert(val);
+    }
+    return result;
+}
+
+std::unordered_set<const Bus*> RequestHandler::GetBusesPtr() const {
+    std::unordered_set<const Bus*> result;
+    for (const auto& [key, val] : db_.busname_to_bus_) {
+        result.insert(val);
+    }
+    return result;
+}
+
 const Stop* RequestHandler::FindStop(const std::string_view stop) const noexcept {
     const Stop* stop_ptr = nullptr;
     try {
@@ -143,9 +159,12 @@ std::vector<geo::Coordinates> RequestHandler::GetFinalStopsForBusGeoCoordinates(
     const Bus *bus_ptr = FindBus(bus);
 
     if (bus_ptr && !GetBusInfoVec(bus).empty()) {
-        geo_coords.push_back(geo::Coordinates{GetBusInfoVec(bus)[GetBusInfoVec(bus).size() - 1]->GetGeo()});
-        if (!bus_ptr->IsRing()) {
-            geo_coords.push_back(geo::Coordinates{GetBusInfoVec(bus)[GetBusInfoVec(bus).size() / 2]->GetGeo()});
+        const Stop* last_stop = GetBusInfoVec(bus)[GetBusInfoVec(bus).size() - 1];
+        const Stop *final_stop = GetStopPtr(bus_ptr->GetFinalStop());
+        geo_coords.push_back(geo::Coordinates{last_stop->GetGeo()});
+
+        if (!bus_ptr->IsRing() && last_stop->GetStop() != final_stop->GetStop()) {
+            geo_coords.push_back(geo::Coordinates{final_stop->GetGeo()});
         }
     }
     return geo_coords;
@@ -172,6 +191,18 @@ std::vector<std::string_view> RequestHandler::GetStopsName() const {
     }
 
     return stops_name;
+}
+
+int RequestHandler::ComputeDistance(const Stop* from, const Stop* to) const {
+    double road_distance = 0.0;
+    auto it = db_.stops_distance_.find(std::make_pair(from, to));
+    if (it == db_.stops_distance_.end()) {
+        it = db_.stops_distance_.find(std::make_pair(to, from));
+    }
+    if (it != db_.stops_distance_.end()) {
+        road_distance = it->second;
+    }
+    return road_distance;
 }
 
 StopsForBusStat GetStopsForBus(const RequestHandler& rh, const std::string_view name) {

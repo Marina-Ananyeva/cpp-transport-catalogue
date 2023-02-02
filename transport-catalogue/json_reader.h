@@ -5,6 +5,7 @@
 #include "json_builder.h"
 #include "log_duration.h"
 #include "map_renderer.h"
+#include "transport_router.h"
 #include "transport_catalogue.h"
 #include "request_handler.h"
 
@@ -24,7 +25,8 @@ struct Query {
     json::Array text_base_stops_;                               //вектор с запросами на добавление информации об остановках
     json::Array text_base_buses_;                               //вектор с запросами на добавление информации о маршрутах
     json::Array text_stat_;                                     //вектор с запросами на предоставление информации
-    json::Dict text_render_setting_;                            //вектор с настройками визуализации карты
+    json::Dict text_render_settings_;                           //словарь с настройками визуализации карты
+    json::Dict text_routing_settings_;                          //словарь с настройками маршрутизации
 };
 
 class JSONReader {
@@ -39,17 +41,21 @@ public:
 
     std::pair<const Bus*, std::vector<const Stop*>> ParseQueryBusRoute(const stat::RequestHandler& rh, const json::Dict& buses);
 
-    svg::Color ReadColor(const json::Node& color_setting);
+    svg::Color ReadColor(const json::Node& color_settings);
 
-    void AddRenderSetting(renderer::RenderSetting& r, const json::Dict&& setting);
+    void AddRenderSettings(renderer::RenderSettings& r, const json::Dict&& settings);
 
-    json::Dict MakeJsonDocStopsForBus(const int query_id, const stat::StopsForBusStat &r);
+    void AddRoutingSettings(routing::RoutingSettings& rt, const json::Dict&& settings);
 
-    json::Dict MakeJsonDocBusesForStop(const int query_id, const stat::BusesForStopStat &r);
+    json::Dict MakeJsonDocStopsForBus(int query_id, const stat::StopsForBusStat &r);
+
+    json::Dict MakeJsonDocBusesForStop(int query_id, const stat::BusesForStopStat &r);
+
+    json::Dict MakeJsonDocForRoute(int query_id, const std::optional<routing::RouteInform>& route_inform);
 };
 
-void FillCatalogue(head::TransportCatalogue& tc, Query& q, renderer::RenderSetting& r, renderer::MapObjects& m, std::istream& is);
+void FillCatalogue(head::TransportCatalogue& tc, Query& q, renderer::RenderSettings& r, renderer::MapObjects& m, routing::RoutingSettings& rt, std::istream& is);
 
-void ExecuteStatRequests(head::TransportCatalogue& tc, Query& q, renderer::MapObjects& m, std::ostream& os);
+void ExecuteStatRequests(head::TransportCatalogue& tc, Query& q, renderer::MapObjects& m, routing::RoutingSettings& rt, std::ostream& os);
 }//namespace reader
 }//namespace catalogue

@@ -82,7 +82,7 @@ svg::Point SphereProjector::operator()(geo::Coordinates coords) const {
 }
 
 //-----------------BusLine--------------------------------
-BusLine::BusLine(const svg::Color color, const std::vector<svg::Point>& stops_point, const RenderSetting &r) 
+BusLine::BusLine(const svg::Color color, const std::vector<svg::Point>& stops_point, const RenderSettings &r) 
     : color_(color)
     , stops_point_(stops_point)
     , r_(r) {
@@ -103,7 +103,7 @@ void BusLine::Draw(svg::ObjectContainer &container) const {
 }
 
 //-----------------BusText-----------------------------
-BusText::BusText(const svg::Color color, const std::vector<svg::Point>& final_stops_position, const std::string_view bus_name, const RenderSetting &r) 
+BusText::BusText(const svg::Color color, const std::vector<svg::Point>& final_stops_position, const std::string_view bus_name, const RenderSettings &r) 
     : color_(color)
     , final_stops_position_(final_stops_position)
     , bus_name_(bus_name)
@@ -145,7 +145,7 @@ void BusText::Draw(svg::ObjectContainer &container) const {
 }
 
 //----------------StopCircle----------------------
-StopCircle::StopCircle(const svg::Color color, const std::vector<svg::Point>& stops_point, const RenderSetting &r) 
+StopCircle::StopCircle(const svg::Color color, const std::vector<svg::Point>& stops_point, const RenderSettings &r) 
     : color_(color)
     , stops_point_(stops_point)
     , r_(r) {
@@ -164,7 +164,7 @@ void StopCircle::Draw(svg::ObjectContainer &container) const {
 }
 
 //-------------------StopText-----------------------------
-StopText::StopText(const svg::Color color, const std::vector<svg::Point>& stops_position, const std::vector<std::string_view>& stops_name, const RenderSetting &r)
+StopText::StopText(const svg::Color color, const std::vector<svg::Point>& stops_position, const std::vector<std::string_view>& stops_name, const RenderSettings &r)
     : color_(color)
     , stops_position_(stops_position)
     , stops_name_(stops_name)
@@ -207,14 +207,14 @@ void StopText::Draw(svg::ObjectContainer &container) const {
 }
 
 //-------------------------------------------------------------------------------
-svg::Color ChooseColor(const RenderSetting& r, const size_t number) {
+svg::Color ChooseColor(const RenderSettings& r, const size_t number) {
     if (number < r.color_palette_.size()) {
         return r.color_palette_[number];
     }
     return r.color_palette_[number % r.color_palette_.size()];
 }
 
-const SphereProjector& MakeSphereProjector(const stat::RequestHandler& rh, RenderSetting& r) {
+const SphereProjector& MakeSphereProjector(const stat::RequestHandler& rh, RenderSettings& r) {
     const double WIDTH = r.width_;
     const double HEIGHT = r.height_;
     const double PADDING = r.padding_;
@@ -258,7 +258,7 @@ void DrawPicture(const Container& container, svg::ObjectContainer& target) {
     DrawPicture(begin(container), end(container), target);
 }
 
-void MapRenderer(const stat::RequestHandler& rh, RenderSetting& r, renderer::MapObjects& m) {
+void MapRenderer(const stat::RequestHandler& rh, RenderSettings& r, renderer::MapObjects& m) {
     MakeSphereProjector(rh, r); // создаем проектор
 
     size_t number = 0;//счетчик порядка маршрута

@@ -23,7 +23,7 @@ public:
     std::string_view GetStop() const;                               //возвращает название остановки
     std::pair<double, double> GetGeo() const;                       //возвращает географические координаты остановки
     std::vector<const Bus*> GetStopAndBuses() const;                //возвращает вектор с маршрутами, которые проходят через остановку
-    void AddBusFromRoute(const Bus* bus) const;                           //добавление маршрута, который проходит через остановку
+    void AddBusFromRoute(const Bus* bus) const;                     //добавление маршрута, который проходит через остановку
 
 private:
     std::string_view stop_;                                         //название остановки
@@ -42,16 +42,17 @@ public:
     bool operator==(const Bus &rhs);
 
     std::string_view GetBus() const;                                //возвращает название маршрута
+    std::string_view GetFinalStop() const;                          //возвращает конечную остановку маршрута
     std::vector<const Stop*> GetBusAndStops() const;                //возвращает вектор с остановками, через которые проходит маршрут
     bool IsRing() const;                                            //возвращает значение кольцевой маршрут
-    void ChangeIsRing(bool new_is_ring) const;                            //изменение значение кольцевой маршрут
-    void AddStopForRoute(const Stop* stop) const;                         //добавление остановки, через которую проходит маршрут 
+    void AddStopForRoute(const Stop* stop) const;                   //добавление остановки, через которую проходит маршрут
+    void AddFinalStop(const Stop *stop) const;                      //добавление конечной остановки
 
-    private:
+private:
     std::string_view bus_;                                          //название маршрута
-    mutable bool is_ring_;                                                  //признак кольцевой маршрут (ставим false только если изначально стоит признак false 
-                                                                    //и конечная и начальная остановки не совпадают)
+    bool is_ring_;                                                  //признак кольцевой маршрут
     mutable std::vector<const Stop*> bus_and_stops_;                //вектор указателей на остановки, через которые проходит маршрут
+    mutable std::string_view final_stop_;                           //конечная остановка
 };
 }//namespace domain
 }//namespace catalogue

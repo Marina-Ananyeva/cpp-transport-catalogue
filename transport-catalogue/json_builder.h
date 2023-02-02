@@ -44,9 +44,9 @@ public:
     Node Build();
 
 private:
-    Node root_;                      //сам конструируемый объект
-    Node key_;                      //ключ текущего объекта Dict
-    std::vector<Node*> nodes_stack_ = {}; //стек указателей на те вершины JSON, которые ещё не построены: 
+    Node root_;                                         //сам конструируемый объект
+    Node key_;                                          //ключ текущего объекта Dict
+    std::vector<Node*> nodes_stack_ = {};               //вектор указателей на те вершины JSON, которые ещё не построены: 
 };
 
 template <class T>

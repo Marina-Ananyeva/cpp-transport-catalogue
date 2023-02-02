@@ -1,8 +1,11 @@
 #pragma once
 
 #include "domain.h"
+#include "graph.h"
+#include"ranges.h"
 #include "transport_catalogue.h"
 
+#include <algorithm>
 #include <deque>
 #include <iomanip>
 #include <iostream>
@@ -30,6 +33,9 @@ public:
     std::set<std::string_view> GetStops() const;                                        //возвращает список всех остановок
     std::set<std::string_view> GetBuses() const;                                        //возвращает список всех маршрутов
 
+    std::unordered_set<const Stop*> GetStopsPtr() const;                                //возвращает список указателей всех остановок
+    std::unordered_set<const Bus*> GetBusesPtr() const;                                 //возвращает список указателей всех маршрутов
+
     const Stop* FindStop(const std::string_view stop) const noexcept;                   //возвращает указатель на остановку по названию 
                                                                                         //(не выбрасывает исключение, если не найдено возвращает nullptr)
     const Bus* FindBus(const std::string_view bus) const noexcept;                      //возвращает указатель на маршрут по названию
@@ -56,6 +62,8 @@ public:
 
     std::vector<geo::Coordinates> GetStopsGeoCoordinates() const;                       //возвращает координаты всех остановок, через которые проходят маршруты
     std::vector<std::string_view> GetStopsName() const;                                 //возвращает названия всех остановок, через которые проходят маршруты
+
+    int ComputeDistance(const Stop* from, const Stop* to) const;                        //возвращает расстояние между остановками по справочнику расстояний
 
 private:
     // RequestHandler использует агрегацию объекта "Транспортный Справочник"

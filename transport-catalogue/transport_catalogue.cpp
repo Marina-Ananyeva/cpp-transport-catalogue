@@ -34,13 +34,9 @@ void TransportCatalogue::AddBusDirectory() {
 
 void TransportCatalogue::AddRoute(std::pair<const Bus*, std::vector<const Stop*>>& bus_route) {
     const Bus *bus_ptr = bus_route.first;
+    bus_ptr->AddFinalStop(bus_route.second[bus_route.second.size() - 1]); //добавляем последнюю остановку из вектора как конечную остановку маршрута
 
-    //если стоит признак, что маршрут не кольцевой, но первая и последняя остановки совпадают, меняем значение на кольцевая
-    if (bus_ptr->IsRing() == false) {
-        if (bus_route.second[0]->GetStop() == bus_route.second[bus_route.second.size() - 1]->GetStop()) {
-            bus_ptr->ChangeIsRing(true);
-        }
-    
+    if (!bus_ptr->IsRing()) {
      //добавляем остановки до кольцевого маршрута
         std::vector<const Stop*> copy_vec(bus_route.second.size() - 1);//создаем вектор - буфер размером на 1 меньше (минус последний элемент)
         std::reverse_copy(bus_route.second.begin(), prev(bus_route.second.end()), copy_vec.begin());//копируем элементы в обратном порядке кроме последнего
