@@ -37,7 +37,7 @@ int main() {
         std::cin.rdbuf(cinbuf);
         std::cout.rdbuf(coutbuf);
         }
-/*
+
     {
         std::ofstream out("output_result.xml");
         std::streambuf *coutbuf = std::cout.rdbuf();
@@ -48,5 +48,5 @@ int main() {
         std::cin.rdbuf(cinbuf);
         std::cout.rdbuf(coutbuf);
     }
-*/
+
 }

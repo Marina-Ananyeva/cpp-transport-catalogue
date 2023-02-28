@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <svg xmlns="http://www.w3.org/2000/svg" version="1.1">
-  <polyline points="99.2283,189.449 50,92.1288 99.2283,189.449" fill="none" stroke="green" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
-  <polyline points="550,50 333.61,129.029 50,92.1288 550,50" fill="none" stroke="rgb(255,160,0)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
-  <text fill="rgba(255,255,255,0.855556)" stroke="rgba(255,255,255,0.855556)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" x="99.2283" y="189.449" dx="7" dy="15" font-size="20" font-family="Verdana" font-weight="bold">114</text>
-  <text fill="green" x="99.2283" y="189.449" dx="7" dy="15" font-size="20" font-family="Verdana" font-weight="bold">114</text>
-  <text fill="rgba(255,255,255,0.855556)" stroke="rgba(255,255,255,0.855556)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" x="50" y="92.1288" dx="7" dy="15" font-size="20" font-family="Verdana" font-weight="bold">114</text>
-  <text fill="green" x="50" y="92.1288" dx="7" dy="15" font-size="20" font-family="Verdana" font-weight="bold">114</text>
-  <text fill="rgba(255,255,255,0.855556)" stroke="rgba(255,255,255,0.855556)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" x="550" y="50" dx="7" dy="15" font-size="20" font-family="Verdana" font-weight="bold">14</text>
-  <text fill="rgb(255,160,0)" x="550" y="50" dx="7" dy="15" font-size="20" font-family="Verdana" font-weight="bold">14</text>
-  <circle cx="99.2283" cy="189.449" r="5" fill="white"/>
-  <circle cx="50" cy="92.1288" r="5" fill="white"/>
-  <circle cx="333.61" cy="129.029" r="5" fill="white"/>
-  <circle cx="550" cy="50" r="5" fill="white"/>
-  <text fill="rgba(255,255,255,0.855556)" stroke="rgba(255,255,255,0.855556)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" x="99.2283" y="189.449" dx="7" dy="-3" font-size="20" font-family="Verdana">Morskoy vokzal</text>
-  <text fill="black" x="99.2283" y="189.449" dx="7" dy="-3" font-size="20" font-family="Verdana">Morskoy vokzal</text>
-  <text fill="rgba(255,255,255,0.855556)" stroke="rgba(255,255,255,0.855556)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" x="50" y="92.1288" dx="7" dy="-3" font-size="20" font-family="Verdana">Rivierskiy most</text>
-  <text fill="black" x="50" y="92.1288" dx="7" dy="-3" font-size="20" font-family="Verdana">Rivierskiy most</text>
-  <text fill="rgba(255,255,255,0.855556)" stroke="rgba(255,255,255,0.855556)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" x="333.61" y="129.029" dx="7" dy="-3" font-size="20" font-family="Verdana">Ulitsa Dokuchaeva</text>
-  <text fill="black" x="333.61" y="129.029" dx="7" dy="-3" font-size="20" font-family="Verdana">Ulitsa Dokuchaeva</text>
-  <text fill="rgba(255,255,255,0.855556)" stroke="rgba(255,255,255,0.855556)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" x="550" y="50" dx="7" dy="-3" font-size="20" font-family="Verdana">Ulitsa Lizy Chaikinoi</text>
-  <text fill="black" x="550" y="50" dx="7" dy="-3" font-size="20" font-family="Verdana">Ulitsa Lizy Chaikinoi</text>
+  <polyline points="164.492,135.162 170,85.4419 147.56,97.7557 164.492,135.162" fill="none" stroke="green" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="170,85.4419 147.56,97.7557 30,30 147.56,97.7557 170,85.4419" fill="none" stroke="rgb(255,160,0)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+  <text fill="rgba(255,255,255,0.85)" stroke="rgba(255,255,255,0.85)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" x="164.492" y="135.162" dx="7" dy="15" font-size="20" font-family="Verdana" font-weight="bold">297</text>
+  <text fill="green" x="164.492" y="135.162" dx="7" dy="15" font-size="20" font-family="Verdana" font-weight="bold">297</text>
+  <text fill="rgba(255,255,255,0.85)" stroke="rgba(255,255,255,0.85)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" x="170" y="85.4419" dx="7" dy="15" font-size="20" font-family="Verdana" font-weight="bold">635</text>
+  <text fill="rgb(255,160,0)" x="170" y="85.4419" dx="7" dy="15" font-size="20" font-family="Verdana" font-weight="bold">635</text>
+  <text fill="rgba(255,255,255,0.85)" stroke="rgba(255,255,255,0.85)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" x="30" y="30" dx="7" dy="15" font-size="20" font-family="Verdana" font-weight="bold">635</text>
+  <text fill="rgb(255,160,0)" x="30" y="30" dx="7" dy="15" font-size="20" font-family="Verdana" font-weight="bold">635</text>
+  <circle cx="170" cy="85.4419" r="5" fill="white"/>
+  <circle cx="164.492" cy="135.162" r="5" fill="white"/>
+  <circle cx="30" cy="30" r="5" fill="white"/>
+  <circle cx="147.56" cy="97.7557" r="5" fill="white"/>
+  <text fill="rgba(255,255,255,0.85)" stroke="rgba(255,255,255,0.85)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" x="170" y="85.4419" dx="7" dy="-3" font-size="20" font-family="Verdana">Biryulyovo Tovarnaya</text>
+  <text fill="black" x="170" y="85.4419" dx="7" dy="-3" font-size="20" font-family="Verdana">Biryulyovo Tovarnaya</text>
+  <text fill="rgba(255,255,255,0.85)" stroke="rgba(255,255,255,0.85)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" x="164.492" y="135.162" dx="7" dy="-3" font-size="20" font-family="Verdana">Biryulyovo Zapadnoye</text>
+  <text fill="black" x="164.492" y="135.162" dx="7" dy="-3" font-size="20" font-family="Verdana">Biryulyovo Zapadnoye</text>
+  <text fill="rgba(255,255,255,0.85)" stroke="rgba(255,255,255,0.85)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" x="30" y="30" dx="7" dy="-3" font-size="20" font-family="Verdana">Prazhskaya</text>
+  <text fill="black" x="30" y="30" dx="7" dy="-3" font-size="20" font-family="Verdana">Prazhskaya</text>
+  <text fill="rgba(255,255,255,0.85)" stroke="rgba(255,255,255,0.85)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" x="147.56" y="97.7557" dx="7" dy="-3" font-size="20" font-family="Verdana">Universam</text>
+  <text fill="black" x="147.56" y="97.7557" dx="7" dy="-3" font-size="20" font-family="Verdana">Universam</text>
 </svg>
