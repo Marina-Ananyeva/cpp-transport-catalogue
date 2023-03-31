@@ -21,17 +21,20 @@ using Stop = domain::Stop;
 using Bus = domain::Bus;
 
 public:
-    void AddStop(const Stop& new_stop);                                                             //добавление остановки
-    void AddStopDirectory();                                                                        //добавление словаря остановок
-    void AddDistance(const std::vector<std::pair<std::pair<const Stop*, const Stop*>, int>>& stops_distance);       //добавление расстояний
-    void AddBus(const Bus& new_bus);                                                                //добавление названия маршрута
-    void AddBusDirectory();                                                                         //добавление словаря маршрутов
-    void AddRoute(std::pair<const Bus*, std::vector<const Stop*>>& bus_route);                      //добавление остановок маршрута
+    void AddSerializeFileName(const std::string &);                                             //добавление названия файла для сериализации
+    void AddStop(const Stop);                                                                  //добавление остановки
+    void AddStopDirectory();                                                                    //добавление словаря остановок
+    void AddDistance(const std::vector<std::pair<std::pair<const Stop*, const Stop*>, int>>&);  //добавление расстояний
+    void AddBus(const Bus);                                                                    //добавление названия маршрута
+    void AddBusDirectory();                                                                     //добавление словаря маршрутов
+    void AddRoute(std::pair<const Bus*, std::vector<const Stop*>>&);                            //добавление остановок маршрута
 
-    double ComputeGeoDistance(const Bus* bus_ptr, const int route_size) const;                      //расчет географического расстояния
-    int ComputeMapDistance(const Bus* bus_ptr, const int route_size) const;                         //расчет расстояния по справочнику расстояний
-    double ComputeCurvature(const double l_route_geo, const int l_route_map) const;                 //расчет соотношения
+    double ComputeGeoDistance(const Bus*, const int ) const;                                    //расчет географического расстояния
+    int ComputeMapDistance(const Bus*, const int) const;                                        //расчет расстояния по справочнику расстояний
+    double ComputeCurvature(const double, const int) const;                                     //расчет соотношения
 
+    std::string GetSerializeFileName() const;                                                   //возвращает название файла для сериализации
+    
     struct PairStopPtrHasher {
         std::size_t operator()(const std::pair<const Stop*, const Stop*>& s) const {
             uint64_t hash = (size_t)(s.first) * 37 + (size_t)(s.second) * 37 * 37;
@@ -39,6 +42,7 @@ public:
         }
     };
 
+    std::string serialize_file_name_;                                                                   //файл для сериализации
     std::deque<Stop> stops_;                                                                            //все остановки
     std::deque<Bus> buses_;                                                                             //все маршруты
 

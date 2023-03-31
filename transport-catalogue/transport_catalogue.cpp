@@ -6,7 +6,11 @@
 
 namespace catalogue {
 namespace head {
-void TransportCatalogue::AddStop(const Stop& new_stop) {
+void TransportCatalogue::AddSerializeFileName(const std::string &file_name) {
+    serialize_file_name_ = file_name;
+}
+
+void TransportCatalogue::AddStop(const Stop new_stop) {
     stops_.push_back(new_stop);
 }
 
@@ -22,7 +26,7 @@ void TransportCatalogue::AddDistance(const std::vector<std::pair<std::pair<const
     }
 }
 
-void TransportCatalogue::AddBus(const Bus& new_bus) {
+void TransportCatalogue::AddBus(const Bus new_bus) {
     buses_.push_back(new_bus);
 }
 
@@ -33,7 +37,7 @@ void TransportCatalogue::AddBusDirectory() {
 }
 
 void TransportCatalogue::AddRoute(std::pair<const Bus*, std::vector<const Stop*>>& bus_route) {
-    const Bus *bus_ptr = bus_route.first;
+   const Bus *bus_ptr = bus_route.first;
     bus_ptr->AddFinalStop(bus_route.second[bus_route.second.size() - 1]); //добавляем последнюю остановку из вектора как конечную остановку маршрута
 
     if (!bus_ptr->IsRing()) {
@@ -86,6 +90,10 @@ int TransportCatalogue::ComputeMapDistance(const Bus* bus_ptr, const int route_s
 double TransportCatalogue::ComputeCurvature(const double l_route_geo, const int l_route_map) const {
     double c_curature = l_route_map / l_route_geo;
     return c_curature;
+}
+
+std::string TransportCatalogue::GetSerializeFileName() const {
+    return serialize_file_name_;
 }
 }//namespace head
 }//namespace catalogue

@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package Router;
+
+import "graph.proto";
+
+message StopVertex {
+    uint32 stop = 1;
+    uint32 vertex = 2;
+}
+
+message BusEdge {
+    uint32 bus = 1;
+    uint32 edge = 2;
+    uint32 span = 3;
+}
+
+message RouterSetting {
+    uint32 bus_wait_time = 1;
+    double bus_velocity = 2;
+    Graph.Graph graph = 3;
+    repeated StopVertex stop_vertex = 4;
+    repeated BusEdge bus_edge = 5;
+}
