@@ -36,8 +36,8 @@ int main() {
 
         std::cin.rdbuf(cinbuf);
         std::cout.rdbuf(coutbuf);
-        }
-
+    }
+    
     {
         std::ofstream out("output_result.xml");
         std::streambuf *coutbuf = std::cout.rdbuf();
@@ -45,8 +45,6 @@ int main() {
         
         catalogue::renderer::PrintMap(std::cout, m);                            //выводим карту в формате xml
 
-        std::cin.rdbuf(cinbuf);
         std::cout.rdbuf(coutbuf);
     }
-
 }
