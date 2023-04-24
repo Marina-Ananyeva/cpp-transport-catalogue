@@ -53,7 +53,7 @@ const Stop* RequestHandler::FindStop(const std::string_view stop) const noexcept
 }
 
 const Bus* RequestHandler::FindBus(const std::string_view bus) const noexcept {
-    const Bus *bus_ptr = nullptr;
+    const Bus* bus_ptr = nullptr;
     try {
         bus_ptr = GetBusPtr(bus);
     }
@@ -139,8 +139,8 @@ std::unordered_set<const Stop*> RequestHandler::GetBusInfoSet(const Bus* bus) co
 }
 
 std::unordered_set<const Bus*> RequestHandler::GetStopInfoSet(const Stop* stop) const {
-    std::vector<const Bus *> res_vec = GetStopInfoVec(stop);
-    std::unordered_set<const Bus *> result;
+    std::vector<const Bus*> res_vec = GetStopInfoVec(stop);
+    std::unordered_set<const Bus*> result;
     result.insert(res_vec.begin(), res_vec.end());
     return result;
 }
@@ -208,7 +208,7 @@ int RequestHandler::ComputeDistance(const Stop* from, const Stop* to) const {
 StopsForBusStat GetStopsForBus(const RequestHandler& rh, const std::string_view name) {
     StopsForBusStat r;
     std::string_view str(name);
-    const Bus *bus_stat_ptr = rh.FindBus(str);
+    const Bus* bus_stat_ptr = rh.FindBus(str);
     if (bus_stat_ptr) {
         int r_size = rh.GetBusInfoVec(bus_stat_ptr).size();
         int u_size = rh.GetBusInfoSet(bus_stat_ptr).size();;
@@ -225,7 +225,7 @@ StopsForBusStat GetStopsForBus(const RequestHandler& rh, const std::string_view 
 BusesForStopStat GetBusesForStop(const RequestHandler& rh, const std::string_view name) {
     BusesForStopStat r;
     std::string_view str(name);
-    const Stop *stop_stat_ptr = rh.FindStop(str);
+    const Stop* stop_stat_ptr = rh.FindStop(str);
     if (stop_stat_ptr) { //проверяем есть ли такая остановка
         std::unordered_set<const Bus*> stop_info = rh.GetStopInfoSet(stop_stat_ptr);
         if (stop_info.empty()) {//проверяем есть ли у остановки маршруты

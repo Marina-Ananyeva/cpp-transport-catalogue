@@ -30,16 +30,12 @@ void JSONReader::ParseQuery(std::istream& is, Query &q) {
         if (key == "routing_settings"s) {
             q.text_routing_settings_ = val.AsDict();
         }
-
-        if (key == "serialization_settings"s) {
-            q.text_serialization_settings_ = val.AsDict();
-        }
     }
 }
 
 Stop JSONReader::ParseQueryStop(const json::Dict& stops) {
     using namespace std::literals;
-    std::string stop = stops.at("name"s).AsString();
+    std::string_view stop = stops.at("name"s).AsString();
     double latitude = stops.at("latitude"s).AsDouble();
     double longitude = stops.at("longitude"s).AsDouble();
 
@@ -49,9 +45,9 @@ Stop JSONReader::ParseQueryStop(const json::Dict& stops) {
 std::vector<std::pair<std::pair<const Stop*, const Stop*>, int>> JSONReader::ParseQueryDistance(const stat::RequestHandler& rh, const json::Dict& stops) {
     std::vector<std::pair<std::pair<const Stop*, const Stop*>, int>> stops_distance;
     using namespace std::literals;
-    std::string stop_start = stops.at("name"s).AsString();
+    std::string_view stop_start = stops.at("name"s).AsString();
     for (const auto& [key, val] : stops.at("road_distances"s).AsDict()) {
-            std::string stop_finish = key;
+            std::string_view stop_finish = key;
             int distance = val.AsInt();
             stops_distance.push_back(std::make_pair(std::make_pair(rh.GetStopPtr(stop_start), rh.GetStopPtr(stop_finish)), distance));
     }
@@ -61,19 +57,19 @@ std::vector<std::pair<std::pair<const Stop*, const Stop*>, int>> JSONReader::Par
 
 Bus JSONReader::ParseQueryBus(const json::Dict& buses) {
     using namespace std::literals;
-    std::string bus = buses.at("name"s).AsString();
+    std::string_view bus = buses.at("name"s).AsString();
     bool is_ring = buses.at("is_roundtrip"s).AsBool();
 
     return Bus(bus, is_ring);
 }
 
 std::pair<const Bus*, std::vector<const Stop*>> JSONReader::ParseQueryBusRoute(const stat::RequestHandler& rh, const json::Dict& buses) {
-    std::string stop_route;
+    std::string_view stop_route;
     std::vector<const Stop*> bus_and_stops;
 
     using namespace std::literals;
 
-    std::string bus = buses.at("name"s).AsString();
+    std::string_view bus = buses.at("name"s).AsString();
     for (const auto& stop : buses.at("stops"s).AsArray()) {
             stop_route = stop.AsString();
             bus_and_stops.push_back(rh.GetStopPtr(stop_route));
@@ -102,7 +98,7 @@ svg::Color JSONReader::ReadColor(const json::Node& color_settings) {
     return svg::Color{svg::Rgba(red, green, blue, opacity)};
 }
 
-void JSONReader::AddRenderSettings(renderer::RenderSettings&r, const json::Dict& settings) {
+void JSONReader::AddRenderSettings(renderer::RenderSettings&r, const json::Dict&& settings) {
     using namespace std::literals;
     r.width_ = settings.at("width"s).AsDouble();
     r.height_ = settings.at("height"s).AsDouble();
@@ -125,7 +121,7 @@ void JSONReader::AddRenderSettings(renderer::RenderSettings&r, const json::Dict&
     }
 }
 
-void JSONReader::AddRoutingSettings(routing::RoutingSettings& rt, const json::Dict& settings) {
+void JSONReader::AddRoutingSettings(routing::RoutingSettings& rt, const json::Dict&& settings) {
     using namespace std::literals;
     rt.bus_wait_time_ = settings.at("bus_wait_time"s).AsDouble();
     rt.bus_velocity_ = settings.at("bus_velocity"s).AsDouble();
@@ -227,15 +223,15 @@ void FillCatalogue(head::TransportCatalogue& tc, Query& q, renderer::RenderSetti
     JSONReader reader;
     {
         using namespace std::literals;
-        //LOG_DURATION("ParseQuery"s);
-        reader.ParseQuery(is, q);
+        LOG_DURATION("ParseQuery"s);
+            reader.ParseQuery(is, q);
     }
 
     if (!q.text_base_stops_.empty()) {
         {
             using namespace std::literals;
-            //LOG_DURATION("AddStops"s);
-            for (const auto& stop : q.text_base_stops_) {
+            LOG_DURATION("AddStop"s);
+            for (const auto& stop : std::move(q.text_base_stops_)) {
                 const Stop new_stop = reader.ParseQueryStop(stop.AsDict());
                 tc.AddStop(new_stop);
             }
@@ -243,8 +239,8 @@ void FillCatalogue(head::TransportCatalogue& tc, Query& q, renderer::RenderSetti
         }
         {
             using namespace std::literals;
-            //LOG_DURATION("AddDistance"s);
-            for (const auto& stop : q.text_base_stops_) {
+            LOG_DURATION("AddDistance"s);
+            for (const auto& stop : std::move(q.text_base_stops_)) {
                 std::vector<std::pair<std::pair<const Stop*, const Stop*>, int>> stops_distance = reader.ParseQueryDistance(rh, stop.AsDict());
                 tc.AddDistance(stops_distance);
             }
@@ -254,8 +250,8 @@ void FillCatalogue(head::TransportCatalogue& tc, Query& q, renderer::RenderSetti
     if (!q.text_base_buses_.empty()) {
         {
             using namespace std::literals;
-            //LOG_DURATION("AddBuses"s);
-            for (const auto& bus : q.text_base_buses_) {
+            LOG_DURATION("AddBus"s);
+            for (const auto& bus : std::move(q.text_base_buses_)) {
                 Bus new_bus = reader.ParseQueryBus(bus.AsDict());
                 tc.AddBus(new_bus);
             }
@@ -264,8 +260,8 @@ void FillCatalogue(head::TransportCatalogue& tc, Query& q, renderer::RenderSetti
         }
         {
             using namespace std::literals;
-            //LOG_DURATION("AddRoute"s);
-            for (const auto& bus : q.text_base_buses_) {
+            LOG_DURATION("AddRoute"s);
+            for (const auto& bus : std::move(q.text_base_buses_)) {
                 std::pair<const Bus*, std::vector<const Stop*>> bus_route = reader.ParseQueryBusRoute(rh, bus.AsDict());
                 tc.AddRoute(bus_route);
             }
@@ -275,12 +271,12 @@ void FillCatalogue(head::TransportCatalogue& tc, Query& q, renderer::RenderSetti
     if (!q.text_render_settings_.empty()) {
         {
             using namespace std::literals;
-            //LOG_DURATION("AddRenderSettings"s);
-            reader.AddRenderSettings(r, q.text_render_settings_);
+            LOG_DURATION("AddRenderSettings"s);
+            reader.AddRenderSettings(r, std::move(q.text_render_settings_));
         }
         {
             using namespace std::literals;
-            //LOG_DURATION("RenderMap"s);
+            LOG_DURATION("RenderMap"s);
             renderer::MapRenderer(rh, r, m);
         }
     }
@@ -288,44 +284,22 @@ void FillCatalogue(head::TransportCatalogue& tc, Query& q, renderer::RenderSetti
     if (!q.text_routing_settings_.empty()) {
         {
             using namespace std::literals;
-            //LOG_DURATION("AddRoutingSettings"s);
-            reader.AddRoutingSettings(rt, q.text_routing_settings_);
+            LOG_DURATION("AddRoutingSettings"s);
+            reader.AddRoutingSettings(rt, std::move(q.text_routing_settings_));
         }
         {
             using namespace std::literals;
-            //LOG_DURATION("BuildGraph"s);
+            LOG_DURATION("BuildGraph"s);
             stat::RequestHandler rh(tc);
             rt.BuildGraph(rh);
         }
-    }
-
-    if (!q.text_serialization_settings_.empty()) {
-        using namespace std::literals;
-        //LOG_DURATION("AddSerializeFileName"s);
-        std::string file_name = q.text_serialization_settings_.at("file"s).AsString();
-        tc.AddSerializeFileName(file_name);
-    }
-}
-
-void ReadRequest(head::TransportCatalogue& tc, Query& q, std::istream& in) {
-    JSONReader reader;
-    {
-        using namespace std::literals;
-        //LOG_DURATION("ParseStatQuery"s);
-        reader.ParseQuery(in, q);
-    }
-
-    if (!q.text_serialization_settings_.empty()) {
-        using namespace std::literals;
-        //LOG_DURATION("AddSerializeFileName"s);
-        std::string file_name = q.text_serialization_settings_.at("file"s).AsString();
-        tc.AddSerializeFileName(file_name);
     }
 }
 
 void ExecuteStatRequests(head::TransportCatalogue& tc, reader::Query& q, renderer::MapObjects& m, routing::RoutingSettings& rt, std::ostream& os) {
     using namespace std::literals;
-    //LOG_DURATION("GetInfo"s);
+    LOG_DURATION("GetInfo"s);
+
     stat::RequestHandler rh(tc);
 
     graph::Router<double> router(rt.graph_);

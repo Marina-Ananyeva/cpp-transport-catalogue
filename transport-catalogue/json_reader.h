@@ -27,38 +27,35 @@ struct Query {
     json::Array text_stat_;                                     //вектор с запросами на предоставление информации
     json::Dict text_render_settings_;                           //словарь с настройками визуализации карты
     json::Dict text_routing_settings_;                          //словарь с настройками маршрутизации
-    json::Dict text_serialization_settings_;                    //словарь с настройками сериализации
 };
 
 class JSONReader {
 public:
-    void ParseQuery(std::istream&, Query&);
+    void ParseQuery(std::istream& is, Query& q);
 
-    Stop ParseQueryStop(const json::Dict&);
+    Stop ParseQueryStop(const json::Dict& stops);
 
-    std::vector<std::pair<std::pair<const Stop*, const Stop*>, int>> ParseQueryDistance(const stat::RequestHandler&, const json::Dict&);
+    std::vector<std::pair<std::pair<const Stop*, const Stop*>, int>> ParseQueryDistance(const stat::RequestHandler& rh, const json::Dict& stops);
 
-    Bus ParseQueryBus(const json::Dict&);
+    Bus ParseQueryBus(const json::Dict& buses);
 
-    std::pair<const Bus*, std::vector<const Stop*>> ParseQueryBusRoute(const stat::RequestHandler&, const json::Dict&);
+    std::pair<const Bus*, std::vector<const Stop*>> ParseQueryBusRoute(const stat::RequestHandler& rh, const json::Dict& buses);
 
-    svg::Color ReadColor(const json::Node&);
+    svg::Color ReadColor(const json::Node& color_settings);
 
-    void AddRenderSettings(renderer::RenderSettings&, const json::Dict&);
+    void AddRenderSettings(renderer::RenderSettings& r, const json::Dict&& settings);
 
-    void AddRoutingSettings(routing::RoutingSettings&, const json::Dict&);
+    void AddRoutingSettings(routing::RoutingSettings& rt, const json::Dict&& settings);
 
-    json::Dict MakeJsonDocStopsForBus(int, const stat::StopsForBusStat&);
+    json::Dict MakeJsonDocStopsForBus(int query_id, const stat::StopsForBusStat &r);
 
-    json::Dict MakeJsonDocBusesForStop(int, const stat::BusesForStopStat&);
+    json::Dict MakeJsonDocBusesForStop(int query_id, const stat::BusesForStopStat &r);
 
-    json::Dict MakeJsonDocForRoute(int, const std::optional<routing::RouteInform>&);
+    json::Dict MakeJsonDocForRoute(int query_id, const std::optional<routing::RouteInform>& route_inform);
 };
 
-void FillCatalogue(head::TransportCatalogue&, Query&, renderer::RenderSettings&, renderer::MapObjects&, routing::RoutingSettings&, std::istream&);
+void FillCatalogue(head::TransportCatalogue& tc, Query& q, renderer::RenderSettings& r, renderer::MapObjects& m, routing::RoutingSettings& rt, std::istream& is);
 
-void ReadRequest(head::TransportCatalogue&, Query&, std::istream&);
-
-void ExecuteStatRequests(head::TransportCatalogue&, Query&, renderer::MapObjects&, routing::RoutingSettings&, std::ostream&);
+void ExecuteStatRequests(head::TransportCatalogue& tc, Query& q, renderer::MapObjects& m, routing::RoutingSettings& rt, std::ostream& os);
 }//namespace reader
 }//namespace catalogue

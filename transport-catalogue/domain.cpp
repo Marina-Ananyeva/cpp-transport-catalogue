@@ -6,13 +6,13 @@
 
 namespace catalogue {
 namespace domain {
-Stop::Stop(const std::string& stop) : stop_(stop) {
+Stop::Stop(const std::string_view stop) : stop_(stop) {
 }
 
-Stop::Stop(const std::tuple<std::string&, double, double> info_stop) : stop_(std::get<0>(info_stop)), geo_({std::get<1>(info_stop), std::get<2>(info_stop)}) {
+Stop::Stop(const std::tuple<std::string_view, double, double> info_stop) : stop_(std::get<0>(info_stop)), geo_({std::get<1>(info_stop), std::get<2>(info_stop)}) {
 }
 
-Stop::Stop(const std::string& stop, const double latitude, const double longitude) : stop_(stop), geo_({latitude, longitude}) {
+Stop::Stop(const std::string_view stop, const double latitude, const double longitude) : stop_(stop), geo_({latitude, longitude}) {
 }
 
 Stop::Stop(const Stop& other) {
@@ -55,10 +55,10 @@ void Stop::AddBusFromRoute(const Bus* bus) const {
     stop_and_buses_.push_back(bus);
 }
 
-Bus::Bus(const std::string& bus) : bus_(bus) {
+Bus::Bus(const std::string_view bus) : bus_(bus) {
 }
 
-Bus::Bus(const std::string& bus, bool is_ring) : bus_(bus), is_ring_(is_ring) {
+Bus::Bus(const std::string_view bus, bool is_ring) : bus_(bus), is_ring_(is_ring) {
 }
 
 Bus::Bus(const Bus& other) {
